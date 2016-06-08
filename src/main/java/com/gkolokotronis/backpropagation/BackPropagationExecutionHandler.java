@@ -51,7 +51,7 @@ public class BackPropagationExecutionHandler {
 				.getProperty(AppConsts.PROPERTIES_CONFIG_NUMBER_EPOCH));
 
 		for (int currentEpoch = 0; currentEpoch < epochs; currentEpoch++) {
-
+			System.out.println(currentEpoch);
 		}
 
 	}

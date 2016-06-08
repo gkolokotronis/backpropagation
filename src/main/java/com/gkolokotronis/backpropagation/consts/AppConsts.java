@@ -25,7 +25,7 @@ public class AppConsts {
 
 	public static String PROPERTIES_CONFIG_TEST_FILE = "bp.test.file";
 
-	public static String PROPERTIES_CONFIG_NUMBER_EPOCH = "bp.maximum.number.epoch";
+	public static String PROPERTIES_CONFIG_NUMBER_EPOCH = "bp.maximum.number.epochs";
 
 	public static String PROPERTIES_CONFIG_NUMBER_UNITS_PER_LAYER = "bp.number.of.units.per.layer";
 }
