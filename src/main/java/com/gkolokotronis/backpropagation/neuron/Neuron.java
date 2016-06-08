@@ -60,6 +60,7 @@ public class Neuron {
 	 */
 	@Override
 	public String toString() {
+
 		return "Neuron [weight=" + weight + ", output=" + output + ", delta=" + delta + "]\n";
 	}
 

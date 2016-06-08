@@ -31,14 +31,13 @@ public final class BackPropUtils {
 	 * @param neuronPosition
 	 *            - the position of our neuron in the layer where it resides so
 	 *            that it can find the weights values from the previous layer
-	 *
+	 *            1.1896841802240486 * 10^-5
 	 * @param learningRate
 	 *            - learningRate
 	 * @param previousLayer
 	 *            - the previous layer of neurons
 	 * @return
 	 */
-	// TODO remove learning rate and get it from properties file
 	public static double sigmoidOutput(int neuronPosition, double learningRate, ArrayList<Neuron> previousLayer) {
 		double output = 0.0;
 
@@ -85,13 +84,13 @@ public final class BackPropUtils {
 	private static Double getRandomWeight() {
 		Random random = new Random();
 
-		double max = 0.0001;
-		double min = -0.0001;
+		double max = 0.0001d;
+		double min = -0.0001d;
 		double range = max - min;
 		double randomNumber;
 		do {
 			randomNumber = random.nextDouble();
-		} while (randomNumber == 0.0);
+		} while (randomNumber == 0.0d);
 		double scaled = randomNumber * range;
 		double shifted = scaled + min;
 		return shifted;
@@ -126,8 +125,7 @@ public final class BackPropUtils {
 	 * 
 	 * @return
 	 */
-	public static HashMap<Integer, ArrayList<Neuron>> initializeLayers() {
-		HashMap<Integer, ArrayList<Neuron>> result = new HashMap<Integer, ArrayList<Neuron>>();
+	public static void initializeLayers(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
 
 		ArrayList<Integer> networkStructure = getNetworkStructure();
 
@@ -143,11 +141,71 @@ public final class BackPropUtils {
 				bias.setOutput(1.0);
 				layer.add(bias);
 			}
-			result.put(i, layer);
+			neuralNetwork.put(i, layer);
 		}
 
-		System.out.println(result);
-
-		return result;
 	}
+
+	public static void feedForward(HashMap<Integer, ArrayList<Neuron>> neuralNetwork,
+			ArrayList<Double> trainingExample) {
+
+		ArrayList<Integer> networkStructure = getNetworkStructure();
+		ArrayList<Neuron> inputLayer = neuralNetwork.get(0);
+		double learningRate = Double.valueOf((String) ConfigPropertiesHolder.getInstance().getProperties()
+				.get(AppConsts.PROPERTIES_CONFIG_LEARNING_RATE));
+		for (int i = 0; i < inputLayer.size() - 1; i++) {
+			inputLayer.get(i).setOutput(trainingExample.get(i));
+		}
+
+		// hidden layers only
+		for (int i = 1; i < networkStructure.size() - 1; i++) {
+			ArrayList<Neuron> layer = neuralNetwork.get(i);
+
+			for (int j = 0; j < layer.size() - 1; j++) {
+				layer.get(j).setOutput(sigmoidOutput(j, learningRate, neuralNetwork.get(i - 1)));
+			}
+		}
+
+		ArrayList<Neuron> outputLayer = neuralNetwork.get(networkStructure.size() - 1);
+		for (int i = 0; i < outputLayer.size(); i++) {
+			outputLayer.get(i)
+					.setOutput(sigmoidOutput(i, learningRate, neuralNetwork.get(networkStructure.size() - 2)));
+		}
+
+		System.out.println(neuralNetwork);
+	}
+
+	public static void backwardPass(HashMap<Integer, ArrayList<Neuron>> neuralNetwork,
+			ArrayList<Double> trainingExampleDouble) {
+		computeDelta(neuralNetwork, trainingExampleDouble);
+		System.out.println(neuralNetwork);
+		recalculateWeights(neuralNetwork);
+		System.out.println(neuralNetwork);
+
+	}
+
+	private static void computeDelta(HashMap<Integer, ArrayList<Neuron>> neuralNetwork,
+			ArrayList<Double> trainingExample) {
+		int numberInputNeurons = getNetworkStructure().get(0);
+
+		ArrayList<Neuron> outputLayer = neuralNetwork.get(neuralNetwork.size() - 1);
+		for (int i = 0; i < outputLayer.size(); i++) {
+
+			double y = outputLayer.get(i).getOutput();
+			double desiredOutput = trainingExample.get(numberInputNeurons + i);
+			outputLayer.get(i).setDelta(y * (1.0 - y) * (y - desiredOutput));
+
+		}
+
+		// hidden layers
+		for (int i = getNetworkStructure().size() - 2; i > 0; i++) {
+			ArrayList<Neuron> layer = neuralNetwork.get(i);
+
+		}
+	}
+
+	private static void recalculateWeights(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
+
+	}
+
 }
