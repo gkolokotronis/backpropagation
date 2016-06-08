@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+
+	<Appenders>
+		<Console name="console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} (%-5level) - %msg%xEx%n"/>
+		</Console>
+		<RollingFile name="log" fileName="logs/backprop.log" filePattern="logs/backprop_%i.log">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} (%-5level) %class{36} (%L) %M - %msg%xEx%n"/>
+			<OnStartupTriggeringPolicy />
+		</RollingFile>
+				
+	</Appenders>
+
+	<Loggers>
+		<Root level="debug">
+			<AppenderRef ref="console" level="info"/>
+			<AppenderRef ref="log" level="debug"/>
+		</Root>
+	</Loggers>
+</Configuration>
