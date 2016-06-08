@@ -53,4 +53,14 @@ public class Neuron {
 		this.weight = weight;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Neuron [weight=" + weight + ", output=" + output + ", delta=" + delta + "]\n";
+	}
+
 }

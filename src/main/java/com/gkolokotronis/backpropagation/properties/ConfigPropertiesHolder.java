@@ -1,4 +1,4 @@
-package com.gkolokotronis.backpropagation;
+package com.gkolokotronis.backpropagation.properties;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

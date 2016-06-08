@@ -3,9 +3,6 @@ package com.gkolokotronis.backpropagation;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.gkolokotronis.backpropagation.neuron.Neuron;
 import com.gkolokotronis.backpropagation.utils.BackPropUtils;
 
@@ -17,11 +14,13 @@ import com.gkolokotronis.backpropagation.utils.BackPropUtils;
  *
  */
 // TODO SET THE log4j2.xml
-public class BPInitiator {
+public class BackPropagation {
 
 	public static void main(String[] args) {
 
-		final Logger logger = LogManager.getLogger(BPInitiator.class);
+		BackPropagationExecutionHandler backprop = new BackPropagationExecutionHandler();
+		backprop.execute();
+
 		HashMap<Integer, ArrayList<Neuron>> layers = new HashMap<Integer, ArrayList<Neuron>>();
 
 		ArrayList<Neuron> layer1 = new ArrayList<Neuron>();

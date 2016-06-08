@@ -39,7 +39,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>com.gkolokotronis.backpropagation.BPInitiator</mainClass>
+							<mainClass>com.gkolokotronis.backpropagation.BackPropagation</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
