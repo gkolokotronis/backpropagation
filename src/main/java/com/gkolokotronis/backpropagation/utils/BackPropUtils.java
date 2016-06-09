@@ -84,8 +84,8 @@ public final class BackPropUtils {
 	private static Double getRandomWeight() {
 		Random random = new Random();
 
-		double max = 0.0001d;
-		double min = -0.0001d;
+		double max = 0.9d;
+		double min = -0.9d;
 		double range = max - min;
 		double randomNumber;
 		do {
@@ -166,21 +166,19 @@ public final class BackPropUtils {
 			}
 		}
 
+		// output layer
 		ArrayList<Neuron> outputLayer = neuralNetwork.get(networkStructure.size() - 1);
 		for (int i = 0; i < outputLayer.size(); i++) {
 			outputLayer.get(i)
 					.setOutput(sigmoidOutput(i, learningRate, neuralNetwork.get(networkStructure.size() - 2)));
 		}
 
-		System.out.println(neuralNetwork);
 	}
 
 	public static void backwardPass(HashMap<Integer, ArrayList<Neuron>> neuralNetwork,
 			ArrayList<Double> trainingExampleDouble) {
 		computeDelta(neuralNetwork, trainingExampleDouble);
-		System.out.println(neuralNetwork);
 		recalculateWeights(neuralNetwork);
-		System.out.println(neuralNetwork);
 
 	}
 
@@ -198,13 +196,51 @@ public final class BackPropUtils {
 		}
 
 		// hidden layers
-		for (int i = getNetworkStructure().size() - 2; i > 0; i++) {
-			ArrayList<Neuron> layer = neuralNetwork.get(i);
+		if (getNetworkStructure().size() > 2) {
+			for (int i = getNetworkStructure().size() - 2; i > 0; i--) {
+				ArrayList<Neuron> layer = neuralNetwork.get(i);
 
+				// do not update the delta of the bias unit
+				for (int j = 0; j < layer.size() - 1; j++) {
+					ArrayList<Neuron> nextLayer = neuralNetwork.get(i + 1);
+					double delta = 0.0;
+					double weightComputation = 0.0;
+
+					delta = layer.get(j).getOutput() * (1 - layer.get(j).getOutput());
+					ArrayList<Double> weights = layer.get(j).getWeight();
+
+					for (int k = 0; k < weights.size(); k++) {
+						weightComputation += weights.get(k) * nextLayer.get(k).getDelta();
+					}
+
+					delta = delta * weightComputation;
+					layer.get(j).setDelta(delta);
+				}
+			}
 		}
 	}
 
 	private static void recalculateWeights(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
+		double momentum = Double.valueOf(
+				ConfigPropertiesHolder.getInstance().getProperties().getProperty(AppConsts.PROPERTIES_CONFIG_MOMENTUM));
+
+		for (int i = 0; i < getNetworkStructure().size() - 1; i++) {
+			ArrayList<Neuron> layer = neuralNetwork.get(i);
+			ArrayList<Neuron> nextLayer = neuralNetwork.get(i + 1);
+
+			for (Neuron neuron : layer) {
+
+				ArrayList<Double> weights = neuron.getWeight();
+				ArrayList<Double> newWeights = new ArrayList<Double>();
+				for (int j = 0; j < weights.size(); j++) {
+
+					Double newWeight = weights.get(j) - momentum * nextLayer.get(j).getDelta() * neuron.getOutput();
+					newWeights.add(newWeight);
+				}
+
+				neuron.setWeight(newWeights);
+			}
+		}
 
 	}
 

@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -89,6 +90,8 @@ public class BackPropagationExecutionHandler {
 
 				}
 
+				System.out.println("Epoch " + currentEpoch + " done");
+
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -99,7 +102,22 @@ public class BackPropagationExecutionHandler {
 	}
 
 	private void testNeuralNetwork(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
+		Scanner reader = new Scanner(System.in); // Reading from System.in
+		ArrayList<Double> input = new ArrayList<Double>();
+		while (true) {
+			System.out.println("Enter 1st number: ");
+			double n = reader.nextDouble();
 
+			input.add(n);
+			System.out.println("Enter 2nd number: ");
+			n = reader.nextDouble();
+
+			input.add(n);
+
+			BackPropUtils.feedForward(neuralNetwork, input);
+			System.out.println(neuralNetwork);
+			input.clear();
+		}
 	}
 
 }
