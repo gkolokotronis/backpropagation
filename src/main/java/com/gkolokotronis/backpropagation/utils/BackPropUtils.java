@@ -243,8 +243,22 @@ public final class BackPropUtils {
 		}
 
 	}
-	
-	public static double calculateError(ArrayList<Neuron> outputLayer, ArrayList<Double> actualOutput){
+
+	public static double calculateTrainError(HashMap<Integer, ArrayList<Neuron>> neuralNetwork,
+			ArrayList<Double> trainingExampleDouble) {
+
+		ArrayList<Neuron> outputLayer = neuralNetwork.get(neuralNetwork.size() - 1);
+		ArrayList<Double> desiredOutput = new ArrayList<Double>();
+
+		for (int i = 0; i < outputLayer.size(); i++) {
+			int numberInputNeurons = BackPropUtils.getNetworkStructure().get(0);
+			desiredOutput.add(trainingExampleDouble.get(numberInputNeurons + i));
+		}
+
+		return calculateError(outputLayer, desiredOutput);
+	}
+
+	private static double calculateError(ArrayList<Neuron> outputLayer, ArrayList<Double> actualOutput) {
 		double result = 0;
 		for (int i = 0; i < outputLayer.size(); i++) {
 			result += Math.pow((outputLayer.get(i).getOutput() - actualOutput.get(i)), 2);
