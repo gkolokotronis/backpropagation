@@ -258,10 +258,10 @@ public final class BackPropUtils {
 		return calculateError(outputLayer, desiredOutput);
 	}
 
-	private static double calculateError(ArrayList<Neuron> outputLayer, ArrayList<Double> actualOutput) {
+	private static double calculateError(ArrayList<Neuron> outputLayer, ArrayList<Double> desiredOutput) {
 		double result = 0;
 		for (int i = 0; i < outputLayer.size(); i++) {
-			result += Math.pow((outputLayer.get(i).getOutput() - actualOutput.get(i)), 2);
+			result += Math.pow((desiredOutput.get(i) - outputLayer.get(i).getOutput()), 2);
 		}
 
 		result += result / 2;

@@ -79,8 +79,8 @@ public class BackPropagationExecutionHandler {
 			trainingError = runBackProp(neuralNetwork, true, trainingFile);
 			crossValidationError = runBackProp(neuralNetwork, false, crossValidFile);
 
-			trainErrorDataset.add(trainingError, Integer.valueOf(currentEpoch));
-			crossValidErrorDataset.add(crossValidationError, Integer.valueOf(currentEpoch));
+			trainErrorDataset.add(trainingError, currentEpoch);
+			crossValidErrorDataset.add(crossValidationError, currentEpoch);
 
 			System.out.println("Training error: " + trainingError);
 			System.out.println("Cross validation error: " + crossValidationError);
@@ -114,7 +114,7 @@ public class BackPropagationExecutionHandler {
 			String fileName) {
 
 		double error = 0.0;
-		int lineNumber = 1;
+		int lineNumber = 0;
 
 		// Read the training file and iterate through the examples and run back
 		// propagation
@@ -144,6 +144,8 @@ public class BackPropagationExecutionHandler {
 
 			}
 
+			error = error / lineNumber;
+
 		} catch (IOException e) {
 			logger.error("Cannot open file " + fileName, e);
 		}
@@ -152,21 +154,9 @@ public class BackPropagationExecutionHandler {
 	}
 
 	private void testNeuralNetwork(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
-		Scanner reader = new Scanner(System.in); // Reading from System.in
-		ArrayList<Double> input = new ArrayList<Double>();
 		while (true) {
-			System.out.println("Enter 1st number: ");
-			double n = reader.nextDouble();
-
-			input.add(n);
-			System.out.println("Enter 2nd number: ");
-			n = reader.nextDouble();
-
-			input.add(n);
-
-			BackPropUtils.feedForward(neuralNetwork, input);
-			System.out.println(neuralNetwork);
-			input.clear();
+			// testXOR(neuralNetwork);
+			testHandWritten(neuralNetwork);
 		}
 	}
 
@@ -188,4 +178,100 @@ public class BackPropagationExecutionHandler {
 		return result;
 	}
 
+	private void testXOR(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
+		Scanner reader = new Scanner(System.in); // Reading from System.in
+		ArrayList<Double> input = new ArrayList<Double>();
+
+		System.out.println("Enter 1st number: ");
+		double n = reader.nextDouble();
+
+		input.add(n);
+		System.out.println("Enter 2nd number: ");
+		n = reader.nextDouble();
+
+		input.add(n);
+
+		BackPropUtils.feedForward(neuralNetwork, input);
+		System.out.println(neuralNetwork);
+		input.clear();
+	}
+
+	private void testHandWritten(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
+		Scanner reader = new Scanner(System.in); // Reading from System.in
+		String crossValidFile = (String) ConfigPropertiesHolder.getInstance().getProperties()
+				.get(AppConsts.PROPERTIES_CONFIG_TEST_FILE);
+		ArrayList<Double> input = new ArrayList<Double>();
+		FileReader fileReader;
+		try {
+			fileReader = new FileReader(crossValidFile);
+
+			BufferedReader br = new BufferedReader(fileReader);
+
+			// iterate through the file
+			int lineNumber = 0;
+			for (String line; (line = br.readLine()) != null;) {
+
+				input = transformTrainingExampleToDouble(line, crossValidFile, lineNumber);
+
+				for (int cnt = 0; cnt < 28; cnt++) {
+					for (int cnt2 = 0; cnt2 < 28; cnt2++) {
+						if (input.get(28 * cnt + cnt2) > 0.5) {
+							System.out.print("X");
+						} else {
+							System.out.print(" ");
+						}
+					}
+					System.out.println("");
+
+				}
+
+				ArrayList<Double> number = new ArrayList<Double>();
+				for (int cnt3 = 0; cnt3 < 10; cnt3++) {
+					// System.out.print(input.get(28 * 28 + cnt3) + " ");
+					number.add(input.get(28 * 28 + cnt3));
+				}
+
+				for (int i = 0; i < number.size(); i++) {
+					if (number.get(i) == 1.0) {
+						if (i == 9) {
+							System.out.println("0");
+						} else {
+							System.out.println(i + 1);
+						}
+					}
+				}
+
+				System.out.println("");
+				System.out.println("Press enter to predict");
+				reader.nextLine();
+				BackPropUtils.feedForward(neuralNetwork, input);
+
+				ArrayList<Neuron> output = neuralNetwork.get(2);
+
+				System.out.println("Prediction:");
+
+				for (int i = 0; i < output.size(); i++) {
+					if (i == 9) {
+						System.out.println("0: " + String.format("%.6f", output.get(i).getOutput()));
+					} else {
+						System.out.println(i + 1 + ": " + String.format("%.6f", output.get(i).getOutput()));
+					}
+				}
+
+				System.out.println("Press enter for the next number");
+				reader.nextLine();
+				lineNumber++;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		BackPropUtils.feedForward(neuralNetwork, input);
+		System.out.println(neuralNetwork);
+		input.clear();
+	}
 }
