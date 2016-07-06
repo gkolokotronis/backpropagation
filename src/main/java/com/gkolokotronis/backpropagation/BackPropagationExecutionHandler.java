@@ -76,15 +76,17 @@ public class BackPropagationExecutionHandler {
 
 		for (int currentEpoch = 0; currentEpoch < epochs; currentEpoch++) {
 
-			trainingError = runBackProp(neuralNetwork, true, trainingFile);
 			crossValidationError = runBackProp(neuralNetwork, false, crossValidFile);
+			System.out.println("Cross valid file done");
+			trainingError = runBackProp(neuralNetwork, true, trainingFile);
+			System.out.println("Training file done");
 
 			trainErrorDataset.add(trainingError, currentEpoch);
 			crossValidErrorDataset.add(crossValidationError, currentEpoch);
 
+			System.out.println("Epoch " + currentEpoch + " done                  ");
 			System.out.println("Training error: " + trainingError);
 			System.out.println("Cross validation error: " + crossValidationError);
-			System.out.println("Epoch " + currentEpoch + " done");
 
 		}
 
@@ -116,13 +118,15 @@ public class BackPropagationExecutionHandler {
 		double error = 0.0;
 		int lineNumber = 0;
 
-		// Read the training file and iterate through the examples and run back
+		// Read the file and iterate through the examples and run back
 		// propagation
 		try {
 			FileReader fileReader = new FileReader(fileName);
 			BufferedReader br = new BufferedReader(fileReader);
 
 			// iterate through the file
+			double percentage = 0.0;
+
 			for (String line; (line = br.readLine()) != null;) {
 
 				// transform pattern from string to double
@@ -141,6 +145,35 @@ public class BackPropagationExecutionHandler {
 				error += BackPropUtils.calculateTrainError(neuralNetwork, trainingExample);
 
 				lineNumber++;
+				if (runBackwardPass) {
+					percentage = (lineNumber * 100) / 46710;
+				} else {
+					percentage = (lineNumber * 100) / 8920;
+				}
+				System.out.print(percentage + " ");
+				if (percentage <= 10) {
+					System.out.print("|          |\r");
+				} else if (percentage > 10 && percentage <= 20) {
+					System.out.print("|+         |\r");
+				} else if (percentage > 20 && percentage <= 30) {
+					System.out.print("|++        |\r");
+				} else if (percentage > 30 && percentage <= 40) {
+					System.out.print("|+++       |\r");
+				} else if (percentage > 40 && percentage <= 50) {
+					System.out.print("|++++      |\r");
+				} else if (percentage > 50 && percentage <= 60) {
+					System.out.print("|+++++     |\r");
+				} else if (percentage > 60 && percentage <= 70) {
+					System.out.print("|++++++    |\r");
+				} else if (percentage > 70 && percentage <= 80) {
+					System.out.print("|+++++++   |\r");
+				} else if (percentage > 80 && percentage <= 90) {
+					System.out.print("|++++++++  |\r");
+				} else if (percentage > 90 && percentage < 100) {
+					System.out.print("|+++++++++ |\r");
+				} else if (percentage == 100) {
+					System.out.print("|++++++++++|\r");
+				}
 
 			}
 
@@ -246,7 +279,7 @@ public class BackPropagationExecutionHandler {
 				reader.nextLine();
 				BackPropUtils.feedForward(neuralNetwork, input);
 
-				ArrayList<Neuron> output = neuralNetwork.get(2);
+				ArrayList<Neuron> output = neuralNetwork.get(BackPropUtils.getNetworkStructure().size() - 1);
 
 				System.out.println("Prediction:");
 
