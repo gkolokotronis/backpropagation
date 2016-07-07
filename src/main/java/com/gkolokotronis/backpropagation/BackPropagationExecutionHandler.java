@@ -76,10 +76,11 @@ public class BackPropagationExecutionHandler {
 
 		for (int currentEpoch = 0; currentEpoch < epochs; currentEpoch++) {
 
-			crossValidationError = runBackProp(neuralNetwork, false, crossValidFile);
-			System.out.println("Cross valid file done");
 			trainingError = runBackProp(neuralNetwork, true, trainingFile);
 			System.out.println("Training file done");
+
+			crossValidationError = runBackProp(neuralNetwork, false, crossValidFile);
+			System.out.println("Cross valid file done");
 
 			trainErrorDataset.add(trainingError, currentEpoch);
 			crossValidErrorDataset.add(crossValidationError, currentEpoch);
@@ -138,7 +139,7 @@ public class BackPropagationExecutionHandler {
 					continue;
 				}
 
-				BackPropUtils.feedForward(neuralNetwork, trainingExample);
+				BackPropUtils.forwardPass(neuralNetwork, trainingExample);
 				if (runBackwardPass) {
 					BackPropUtils.backwardPass(neuralNetwork, trainingExample);
 				}
@@ -224,7 +225,7 @@ public class BackPropagationExecutionHandler {
 
 		input.add(n);
 
-		BackPropUtils.feedForward(neuralNetwork, input);
+		BackPropUtils.forwardPass(neuralNetwork, input);
 		System.out.println(neuralNetwork);
 		input.clear();
 	}
@@ -277,7 +278,7 @@ public class BackPropagationExecutionHandler {
 				System.out.println("");
 				System.out.println("Press enter to predict");
 				reader.nextLine();
-				BackPropUtils.feedForward(neuralNetwork, input);
+				BackPropUtils.forwardPass(neuralNetwork, input);
 
 				ArrayList<Neuron> output = neuralNetwork.get(BackPropUtils.getNetworkStructure().size() - 1);
 
@@ -303,7 +304,7 @@ public class BackPropagationExecutionHandler {
 			e.printStackTrace();
 		}
 
-		BackPropUtils.feedForward(neuralNetwork, input);
+		BackPropUtils.forwardPass(neuralNetwork, input);
 		System.out.println(neuralNetwork);
 		input.clear();
 	}

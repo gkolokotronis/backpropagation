@@ -81,6 +81,11 @@ public final class BackPropUtils {
 
 	}
 
+	/**
+	 * Return a random Double with in the range of -0.9 to 0.9, excluding 0.0
+	 * 
+	 * @return - a Double with in the range of -0.9 to 0.9, excluding 0.0
+	 */
 	private static Double getRandomWeight() {
 		Random random = new Random();
 
@@ -123,7 +128,8 @@ public final class BackPropUtils {
 	 * plus the bias unit. Returns a HashMap where the 0 key is the input layer.
 	 * 1 is the next layer and so on
 	 * 
-	 * @return
+	 * @param neuralNetwork
+	 *            - the neural network
 	 */
 	public static void initializeLayers(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
 
@@ -135,7 +141,7 @@ public final class BackPropUtils {
 				Neuron neuron = new Neuron();
 				layer.add(neuron);
 			}
-			// bias unit except on the output unit
+			// set the bias unit except on the output layer
 			if (i != networkStructure.size() - 1) {
 				Neuron bias = new Neuron();
 				bias.setOutput(1.0);
@@ -146,18 +152,56 @@ public final class BackPropUtils {
 
 	}
 
-	public static void feedForward(HashMap<Integer, ArrayList<Neuron>> neuralNetwork,
+	/**
+	 * executes the forward pass step of the backpropagation algorithm
+	 * 
+	 * @param neuralNetwork
+	 *            - the neural network
+	 * @param trainingExample
+	 *            - the training example
+	 */
+	public static void forwardPass(HashMap<Integer, ArrayList<Neuron>> neuralNetwork,
 			ArrayList<Double> trainingExample) {
 
 		ArrayList<Integer> networkStructure = getNetworkStructure();
-		ArrayList<Neuron> inputLayer = neuralNetwork.get(0);
 		double learningRate = Double.valueOf((String) ConfigPropertiesHolder.getInstance().getProperties()
 				.get(AppConsts.PROPERTIES_CONFIG_LEARNING_RATE));
+
+		calculateOutputForInputLayer(neuralNetwork, trainingExample);
+		calculateOutputForHiddenLayers(neuralNetwork, learningRate, networkStructure);
+		calculateOutputForOutputLayer(neuralNetwork, learningRate, networkStructure);
+
+	}
+
+	/**
+	 * Sets the output for each neuron of the input layer from the training
+	 * example
+	 * 
+	 * @param neuralNetwork
+	 *            - the neural network
+	 * @param trainingExample
+	 *            - the training example
+	 */
+	private static void calculateOutputForInputLayer(HashMap<Integer, ArrayList<Neuron>> neuralNetwork,
+			ArrayList<Double> trainingExample) {
+		ArrayList<Neuron> inputLayer = neuralNetwork.get(0);
+
 		for (int i = 0; i < inputLayer.size() - 1; i++) {
 			inputLayer.get(i).setOutput(trainingExample.get(i));
 		}
+	}
 
-		// hidden layers only
+	/**
+	 * Calculates the output for each neuron on the hidden layers
+	 * 
+	 * @param neuralNetwork
+	 *            - the neural network
+	 * @param learningRate
+	 *            - the learning rate
+	 */
+	private static void calculateOutputForHiddenLayers(HashMap<Integer, ArrayList<Neuron>> neuralNetwork,
+			double learningRate, ArrayList<Integer> networkStructure) {
+
 		for (int i = 1; i < networkStructure.size() - 1; i++) {
 			ArrayList<Neuron> layer = neuralNetwork.get(i);
 
@@ -165,16 +209,34 @@ public final class BackPropUtils {
 				layer.get(j).setOutput(sigmoidOutput(j, learningRate, neuralNetwork.get(i - 1)));
 			}
 		}
+	}
 
-		// output layer
+	/**
+	 * Calculates the output for each neuron on the output layer
+	 * 
+	 * @param neuralNetwork
+	 *            - the neural network
+	 * @param learningRate
+	 *            - the learning rate
+	 */
+	private static void calculateOutputForOutputLayer(HashMap<Integer, ArrayList<Neuron>> neuralNetwork,
+			double learningRate, ArrayList<Integer> networkStructure) {
 		ArrayList<Neuron> outputLayer = neuralNetwork.get(networkStructure.size() - 1);
+
 		for (int i = 0; i < outputLayer.size(); i++) {
 			outputLayer.get(i)
 					.setOutput(sigmoidOutput(i, learningRate, neuralNetwork.get(networkStructure.size() - 2)));
 		}
-
 	}
 
+	/**
+	 * Executes the backward pass of the back propagation algorithm
+	 * 
+	 * @param neuralNetwork
+	 *            - the neural network
+	 * @param trainingExampleDouble
+	 *            - the training example
+	 */
 	public static void backwardPass(HashMap<Integer, ArrayList<Neuron>> neuralNetwork,
 			ArrayList<Double> trainingExampleDouble) {
 		computeDelta(neuralNetwork, trainingExampleDouble);
@@ -182,11 +244,70 @@ public final class BackPropUtils {
 
 	}
 
+	/**
+	 * Computes the delta of the neural network
+	 * 
+	 * @param neuralNetwork
+	 *            - the neural network
+	 * @param trainingExample
+	 *            - the training example output is needed for the delta
+	 *            computation of the output layer
+	 */
 	private static void computeDelta(HashMap<Integer, ArrayList<Neuron>> neuralNetwork,
 			ArrayList<Double> trainingExample) {
+
+		computeDeltaOutputLayer(neuralNetwork.get(neuralNetwork.size() - 1), trainingExample);
+
+		// calculate hidden layers if exist
+		if (getNetworkStructure().size() > 2) {
+			computeDeltaHiddenLayers(neuralNetwork);
+		}
+	}
+
+	/**
+	 * Computes the delta for the hidden layers neurons
+	 * 
+	 * @param neuralNetwork
+	 *            - the neuralNetwork
+	 */
+	private static void computeDeltaHiddenLayers(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
+
+		int networkSize = getNetworkStructure().size();
+
+		for (int i = networkSize - 2; i > 0; i--) {
+			ArrayList<Neuron> currentLayer = neuralNetwork.get(i);
+
+			// do not update the delta of the bias unit - bias unit is the last
+			// neuron on each layer
+			for (int j = 0; j < currentLayer.size() - 1; j++) {
+				ArrayList<Neuron> nextLayer = neuralNetwork.get(i + 1);
+				double delta = 0.0;
+				double weightComputation = 0.0;
+
+				delta = currentLayer.get(j).getOutput() * (1 - currentLayer.get(j).getOutput());
+				ArrayList<Double> weights = currentLayer.get(j).getWeight();
+
+				for (int k = 0; k < weights.size(); k++) {
+					weightComputation += weights.get(k) * nextLayer.get(k).getDelta();
+				}
+
+				delta = delta * weightComputation;
+				currentLayer.get(j).setDelta(delta);
+			}
+		}
+	}
+
+	/**
+	 * Compute the delta for the output layer neurons
+	 * 
+	 * @param outputLayer
+	 *            - the output layer of the neural network
+	 * @param trainingExample
+	 *            - the training example (both input and output units)
+	 */
+	private static void computeDeltaOutputLayer(ArrayList<Neuron> outputLayer, ArrayList<Double> trainingExample) {
 		int numberInputNeurons = getNetworkStructure().get(0);
 
-		ArrayList<Neuron> outputLayer = neuralNetwork.get(neuralNetwork.size() - 1);
 		for (int i = 0; i < outputLayer.size(); i++) {
 
 			double y = outputLayer.get(i).getOutput();
@@ -194,37 +315,22 @@ public final class BackPropUtils {
 			outputLayer.get(i).setDelta(y * (1.0 - y) * (y - desiredOutput));
 
 		}
-
-		// hidden layers
-		if (getNetworkStructure().size() > 2) {
-			for (int i = getNetworkStructure().size() - 2; i > 0; i--) {
-				ArrayList<Neuron> layer = neuralNetwork.get(i);
-
-				// do not update the delta of the bias unit
-				for (int j = 0; j < layer.size() - 1; j++) {
-					ArrayList<Neuron> nextLayer = neuralNetwork.get(i + 1);
-					double delta = 0.0;
-					double weightComputation = 0.0;
-
-					delta = layer.get(j).getOutput() * (1 - layer.get(j).getOutput());
-					ArrayList<Double> weights = layer.get(j).getWeight();
-
-					for (int k = 0; k < weights.size(); k++) {
-						weightComputation += weights.get(k) * nextLayer.get(k).getDelta();
-					}
-
-					delta = delta * weightComputation;
-					layer.get(j).setDelta(delta);
-				}
-			}
-		}
 	}
 
+	/**
+	 * loop through the neurons of the network and recalculate the weights of
+	 * each neuron. It excludes the output layer.
+	 * 
+	 * @param neuralNetwork
+	 *            - the neural network which needs weight recalculation
+	 */
 	private static void recalculateWeights(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
 		double momentum = Double.valueOf(
 				ConfigPropertiesHolder.getInstance().getProperties().getProperty(AppConsts.PROPERTIES_CONFIG_MOMENTUM));
 
-		for (int i = 0; i < getNetworkStructure().size() - 1; i++) {
+		int networkSize = getNetworkStructure().size();
+
+		for (int i = 0; i < networkSize - 1; i++) {
 			ArrayList<Neuron> layer = neuralNetwork.get(i);
 			ArrayList<Neuron> nextLayer = neuralNetwork.get(i + 1);
 
@@ -244,6 +350,13 @@ public final class BackPropUtils {
 
 	}
 
+	/**
+	 * 
+	 * @param neuralNetwork
+	 *            - the neural network
+	 * @param trainingExampleDouble
+	 * @return
+	 */
 	public static double calculateTrainError(HashMap<Integer, ArrayList<Neuron>> neuralNetwork,
 			ArrayList<Double> trainingExampleDouble) {
 
@@ -258,6 +371,16 @@ public final class BackPropUtils {
 		return calculateError(outputLayer, desiredOutput);
 	}
 
+	/**
+	 * It compares the output of the neural network (the output layer) with the
+	 * desired output and it populates the error.
+	 * 
+	 * @param outputLayer
+	 *            - the output layer of the neural network
+	 * @param desiredOutput
+	 *            - the desired output
+	 * @return the error between the actual output and the desired output
+	 */
 	private static double calculateError(ArrayList<Neuron> outputLayer, ArrayList<Double> desiredOutput) {
 		double result = 0;
 		for (int i = 0; i < outputLayer.size(); i++) {
