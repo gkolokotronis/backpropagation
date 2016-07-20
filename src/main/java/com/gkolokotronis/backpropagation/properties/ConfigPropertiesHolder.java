@@ -19,11 +19,16 @@ public final class ConfigPropertiesHolder {
 
 	private Properties properties = new Properties();
 
+	private ConfigPropertiesValidator validator;
+
 	private ConfigPropertiesHolder() {
 
 		String propertiesPath = System.getProperty("user.dir") + System.getProperty("file.separator")
 				+ AppConsts.PROPERTIES_FILE_NAME;
 		load(propertiesPath);
+
+		this.validator = ConfigPropertiesValidator.newInstance(getProperties());
+		this.validator.validate();
 	}
 
 	public static ConfigPropertiesHolder getInstance() {
@@ -55,10 +60,18 @@ public final class ConfigPropertiesHolder {
 		}
 
 		try {
-			properties.load(inputStream);
+			getProperties().load(inputStream);
 		} catch (IOException e) {
 			throw new RuntimeException("Something went wrong while reading property file " + propertiesFilePath, e);
 		}
+
+	}
+
+	/**
+	 * It validates the properties path
+	 */
+	private void validate() {
+		Properties properties = getProperties();
 
 	}
 
