@@ -21,4 +21,7 @@ public class AppConsts {
 
 	public static String PROPERTIES_CONFIG_TEST_FILE = "bp.test.file";
 
+	public static String PROPERTIES_CONFIG_FINAL_WEIGHTS_FILE = "bp.final.weights.file";
+
+	public static String PROPERTIES_CONFIG_FILE_TO_INITIALIZE = "bp.file.to.initialize";
 }
