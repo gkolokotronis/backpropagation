@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
@@ -38,18 +37,21 @@ public class BackPropagationExecutionHandler {
 	public void execute() {
 		HashMap<Integer, ArrayList<Neuron>> neuralNetwork = new HashMap<Integer, ArrayList<Neuron>>();
 
-		logger.debug("Validate properties file");
-		validatePropertiesFile();
 		initializeLayers(neuralNetwork);
 		trainNeuralNetwork(neuralNetwork);
+		storeFinalWeights(neuralNetwork);
 		testNeuralNetwork(neuralNetwork);
 
 	}
 
-	private void validatePropertiesFile() {
-		// TODO validate the properties file
-		Properties properties = ConfigPropertiesHolder.getInstance().getProperties();
-		System.out.println(properties.entrySet());
+	/**
+	 * It stores the final weights of the neural network to the file specified
+	 * in the application.properties
+	 * 
+	 * @param neuralNetwork
+	 */
+	private void storeFinalWeights(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
+
 	}
 
 	private void initializeLayers(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
