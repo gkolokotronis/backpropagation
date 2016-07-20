@@ -25,6 +25,7 @@ public final class ConfigPropertiesValidator {
 	}
 
 	public void validate() {
+		logger.debug("Started validation of " + AppConsts.PROPERTIES_FILE_NAME + " file");
 		validateMandatoryProperties();
 		validateNonMandatoryProperties();
 	}
@@ -95,18 +96,17 @@ public final class ConfigPropertiesValidator {
 
 	protected void validateFileExistence() {
 		String[] mandatoryFiles = { AppConsts.PROPERTIES_CONFIG_TRAINING_FILE,
-				AppConsts.PROPERTIES_CONFIG_CROSS_VALIDATION_FILE, AppConsts.PROPERTIES_CONFIG_TEST_FILE,
-				AppConsts.PROPERTIES_CONFIG_FINAL_WEIGHTS_FILE };
+				AppConsts.PROPERTIES_CONFIG_CROSS_VALIDATION_FILE, AppConsts.PROPERTIES_CONFIG_TEST_FILE };
 
-		for (String fileName : mandatoryFiles) {
-			String fileLocation = properties.getProperty(fileName);
+		for (String propertyName : mandatoryFiles) {
+			String fileLocation = properties.getProperty(propertyName);
 			File file = new File(fileLocation);
 
 			if (!file.exists() || !file.isFile()) {
-				logger.error("Property" + fileName + " contains a file that does not exists. Please check your "
+				logger.error("Property " + propertyName + " contains a file that does not exists. Please check your "
 						+ AppConsts.PROPERTIES_FILE_NAME + " file");
 				throw new RuntimeException(
-						"Property" + fileName + " contains a file that does not exists. Please check your "
+						"Property " + propertyName + " contains a file that does not exists. Please check your "
 								+ AppConsts.PROPERTIES_FILE_NAME + " file");
 			}
 		}
@@ -131,6 +131,19 @@ public final class ConfigPropertiesValidator {
 	}
 
 	protected void validateNonMandatoryProperties() {
+		String initializationFile = properties.getProperty(AppConsts.PROPERTIES_CONFIG_FILE_TO_INITIALIZE);
 
+		if (initializationFile != null && initializationFile.length() > 0) {
+			File file = new File(initializationFile);
+
+			if (!file.exists() || !file.isFile()) {
+				logger.error("Property " + AppConsts.PROPERTIES_CONFIG_FILE_TO_INITIALIZE
+						+ " contains a file that does not exists. Please check your " + AppConsts.PROPERTIES_FILE_NAME
+						+ " file");
+				throw new RuntimeException("Property " + AppConsts.PROPERTIES_CONFIG_FILE_TO_INITIALIZE
+						+ " contains a file that does not exists. Please check your " + AppConsts.PROPERTIES_FILE_NAME
+						+ " file");
+			}
+		}
 	}
 }

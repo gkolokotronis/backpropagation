@@ -51,6 +51,7 @@ public final class ConfigPropertiesHolder {
 	 *            - the file path of the properties file
 	 */
 	private void load(String propertiesFilePath) {
+		logger.debug("Started loading of " + AppConsts.PROPERTIES_FILE_NAME + " file");
 		InputStream inputStream = null;
 		try {
 			inputStream = new FileInputStream(propertiesFilePath);
@@ -64,14 +65,6 @@ public final class ConfigPropertiesHolder {
 		} catch (IOException e) {
 			throw new RuntimeException("Something went wrong while reading property file " + propertiesFilePath, e);
 		}
-
-	}
-
-	/**
-	 * It validates the properties path
-	 */
-	private void validate() {
-		Properties properties = getProperties();
 
 	}
 
