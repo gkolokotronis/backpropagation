@@ -131,6 +131,12 @@ public final class ConfigPropertiesValidator {
 	}
 
 	protected void validateNonMandatoryProperties() {
+		validateInitializationFile();
+		validateInitializationAgainstStorageFile();
+
+	}
+
+	protected void validateInitializationFile() {
 		String initializationFile = properties.getProperty(AppConsts.PROPERTIES_CONFIG_FILE_TO_INITIALIZE);
 
 		if (initializationFile != null && initializationFile.length() > 0) {
@@ -144,6 +150,20 @@ public final class ConfigPropertiesValidator {
 						+ " contains a file that does not exists. Please check your " + AppConsts.PROPERTIES_FILE_NAME
 						+ " file");
 			}
+		}
+	}
+
+	protected void validateInitializationAgainstStorageFile() {
+		String initializationFile = properties.getProperty(AppConsts.PROPERTIES_CONFIG_FILE_TO_INITIALIZE);
+		String finalWeightsFile = properties.getProperty(AppConsts.PROPERTIES_CONFIG_FINAL_WEIGHTS_FILE);
+
+		if (finalWeightsFile != null && initializationFile != null && finalWeightsFile.equals(initializationFile)) {
+			logger.error("Property " + AppConsts.PROPERTIES_CONFIG_FILE_TO_INITIALIZE + " contains the same file as "
+					+ AppConsts.PROPERTIES_CONFIG_FINAL_WEIGHTS_FILE + "Please check your "
+					+ AppConsts.PROPERTIES_FILE_NAME + " file");
+			throw new RuntimeException("Property " + AppConsts.PROPERTIES_CONFIG_FILE_TO_INITIALIZE
+					+ " contains the same file as " + AppConsts.PROPERTIES_CONFIG_FINAL_WEIGHTS_FILE
+					+ "Please check your " + AppConsts.PROPERTIES_FILE_NAME + " file");
 		}
 	}
 }

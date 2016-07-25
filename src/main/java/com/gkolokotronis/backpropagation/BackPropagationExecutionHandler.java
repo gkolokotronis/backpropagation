@@ -10,16 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jfree.chart.ChartFactory;
@@ -28,13 +18,12 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import com.gkolokotronis.backpropagation.consts.AppConsts;
 import com.gkolokotronis.backpropagation.neuron.Neuron;
 import com.gkolokotronis.backpropagation.properties.ConfigPropertiesHolder;
 import com.gkolokotronis.backpropagation.utils.BackPropUtils;
+import com.gkolokotronis.backpropagation.weights.handling.WeightsStorageHandler;
 
 /**
  * This class is responsible for handling the execution of the application
@@ -64,65 +53,9 @@ public class BackPropagationExecutionHandler {
 	 *            - the neuralNetwork
 	 */
 	private void storeFinalWeights(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
-		String fileName = ConfigPropertiesHolder.getInstance().getProperties()
-				.getProperty(AppConsts.PROPERTIES_CONFIG_FINAL_WEIGHTS_FILE);
+		WeightsStorageHandler weightsStorage = new WeightsStorageHandler(neuralNetwork);
 
-		int networkSize = BackPropUtils.getNetworkStructure().size();
-
-		try {
-
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-
-			// root elements
-			Document doc = docBuilder.newDocument();
-			Element rootElement = doc.createElement("neuralNetwork");
-			doc.appendChild(rootElement);
-
-			for (int i = 0; i < networkSize; i++) {
-
-				Element layerElement = doc.createElement("layer");
-				rootElement.appendChild(layerElement);
-
-				ArrayList<Neuron> layer = neuralNetwork.get(i);
-
-				for (Neuron neuron : layer) {
-					Element neuronElement = doc.createElement("Neuron");
-
-					ArrayList<Double> neuronWeights = neuron.getWeight();
-
-					if (neuronWeights != null) {
-						for (Double weight : neuronWeights) {
-
-							neuronElement.setAttribute("weight", weight.toString());
-
-						}
-					}
-
-					layerElement.appendChild(neuronElement);
-
-				}
-
-			}
-
-			// write the content into xml file
-			TransformerFactory transformerFactory = TransformerFactory.newInstance();
-			Transformer transformer = transformerFactory.newTransformer();
-
-			// in order to add spaces when writing to xml
-			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-
-			DOMSource source = new DOMSource(doc);
-			StreamResult result = new StreamResult(new File(fileName));
-
-			transformer.transform(source, result);
-
-		} catch (ParserConfigurationException pce) {
-			pce.printStackTrace();
-		} catch (TransformerException tfe) {
-			tfe.printStackTrace();
-		}
+		weightsStorage.execute();
 
 	}
 
@@ -263,8 +196,8 @@ public class BackPropagationExecutionHandler {
 
 	private void testNeuralNetwork(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
 		while (true) {
-			// testXOR(neuralNetwork);
-			testHandWritten(neuralNetwork);
+			testXOR(neuralNetwork);
+			// testHandWritten(neuralNetwork);
 		}
 	}
 
