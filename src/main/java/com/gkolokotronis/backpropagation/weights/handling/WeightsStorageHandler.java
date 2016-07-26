@@ -45,23 +45,29 @@ public class WeightsStorageHandler extends WeightsHandler {
 			Element rootElement = doc.createElement("neuralNetwork");
 			doc.appendChild(rootElement);
 
+			Element layersElement = doc.createElement("layers");
+			rootElement.appendChild(layersElement);
+
 			for (int i = 0; i < networkSize; i++) {
 
 				Element layerElement = doc.createElement("layer");
-				rootElement.appendChild(layerElement);
+				layersElement.appendChild(layerElement);
 
 				ArrayList<Neuron> layer = getNeuralNetwork().get(i);
 
 				for (Neuron neuron : layer) {
-					Element neuronElement = doc.createElement("Neuron");
+					Element neuronElement = doc.createElement("neuron");
 
 					ArrayList<Double> neuronWeights = neuron.getWeight();
 
 					if (neuronWeights != null) {
 						for (Double weight : neuronWeights) {
+							// neuronElement.setAttribute("weight",
+							// weight.toString());
+							Element weightElement = doc.createElement("weight");
+							weightElement.appendChild(doc.createTextNode(weight.toString()));
 
-							neuronElement.setAttribute("weight", weight.toString());
-
+							neuronElement.appendChild(weightElement);
 						}
 					}
 
