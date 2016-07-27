@@ -23,6 +23,7 @@ import com.gkolokotronis.backpropagation.consts.AppConsts;
 import com.gkolokotronis.backpropagation.neuron.Neuron;
 import com.gkolokotronis.backpropagation.properties.ConfigPropertiesHolder;
 import com.gkolokotronis.backpropagation.utils.BackPropUtils;
+import com.gkolokotronis.backpropagation.weights.handling.WeightsLoadingHandler;
 import com.gkolokotronis.backpropagation.weights.handling.WeightsStorageHandler;
 
 /**
@@ -38,9 +39,17 @@ public class BackPropagationExecutionHandler {
 	public void execute() {
 		HashMap<Integer, ArrayList<Neuron>> neuralNetwork = new HashMap<Integer, ArrayList<Neuron>>();
 
-		initializeLayers(neuralNetwork);
-		trainNeuralNetwork(neuralNetwork);
-		storeFinalWeights(neuralNetwork);
+		String initializationFile = (String) ConfigPropertiesHolder.getInstance().getProperties()
+				.get(AppConsts.PROPERTIES_CONFIG_FILE_TO_INITIALIZE);
+
+		if (initializationFile == null) {
+			initializeLayers(neuralNetwork);
+			trainNeuralNetwork(neuralNetwork);
+			storeFinalWeights(neuralNetwork);
+		} else {
+			WeightsLoadingHandler weightsLoadingHandler = new WeightsLoadingHandler(null);
+			weightsLoadingHandler.execute();
+		}
 		// testNeuralNetwork(neuralNetwork);
 
 	}

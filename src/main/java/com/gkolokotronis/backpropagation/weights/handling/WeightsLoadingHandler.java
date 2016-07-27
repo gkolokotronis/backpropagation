@@ -21,16 +21,20 @@ import javax.xml.validation.Validator;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.binder.DigesterLoader;
-import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.gkolokotronis.backpropagation.consts.AppConsts;
 import com.gkolokotronis.backpropagation.neuron.Neuron;
+import com.gkolokotronis.backpropagation.properties.ConfigPropertiesHolder;
 import com.gkolokotronis.backpropagation.weights.xml.elements.NeuralNetworkElement;
-import com.sun.org.apache.xml.internal.security.utils.resolver.ResourceResolver;
+import com.gkolokotronis.backpropagation.xsd.ResourceResolver;
 
 public class WeightsLoadingHandler extends WeightsHandler {
+
+	final Logger logger = LogManager.getLogger(WeightsLoadingHandler.class);
 
 	private NeuralNetworkElement neuralNetworkElement;
 
@@ -40,33 +44,35 @@ public class WeightsLoadingHandler extends WeightsHandler {
 
 	@Override
 	public void execute() {
-		neuralNetworkElement = loadInitializationWeights(xmlDistinct, AppConsts.CUSTOM_XSD_LOCATION);
+		String xmlDistinct = ConfigPropertiesHolder.getInstance().getProperties()
+				.getProperty(AppConsts.PROPERTIES_CONFIG_FILE_TO_INITIALIZE);
+
+		neuralNetworkElement = loadInitializationWeights(xmlDistinct, AppConsts.INITIALIZATION_FILE_XSD_LOCATION);
+
+		System.out.println(neuralNetworkElement);
 
 	}
 
-	private static NeuralNetworkElement loadInitializationWeights(String xmlFilePath, String xsdPath) {
+	private NeuralNetworkElement loadInitializationWeights(String xmlFilePath, String xsdPath) {
 
 		NeuralNetworkElement result = null;
 		InputStream inputStream = null;
 		try {
 			inputStream = new FileInputStream(xmlFilePath);
 		} catch (FileNotFoundException e) {
-			throw ExceptionFactory.createException(RuntimeException.class, MessageCodes.ERR_CANNOT_FIND_FILE, e, logger,
-					Level.ERROR, xmlFilePath);
+			throw new RuntimeException("Cannot find file " + xmlFilePath, e);
 		}
 
 		validateXMLSchema(xmlFilePath, xsdPath);
-		DigesterLoader digesterLoader = DigesterLoader.newLoader(new CustomModule());
+		DigesterLoader digesterLoader = DigesterLoader.newLoader(new NeuralNetworkModule());
 		Digester digester = digesterLoader.newDigester();
 
 		try {
 			result = digester.parse(inputStream);
 		} catch (IOException e) {
-			throw ExceptionFactory.createException(RuntimeException.class, MessageCodes.ERR_INP_OUT_WHILE_PARSING_XML,
-					e, logger, Level.ERROR, xmlFilePath);
+			throw new RuntimeException("Input/output error while parsing xml file " + xmlFilePath, e);
 		} catch (SAXException e) {
-			throw ExceptionFactory.createException(RuntimeException.class, MessageCodes.ERR_WHILE_PARSING_XML, e,
-					logger, Level.ERROR, xmlFilePath);
+			throw new RuntimeException("Error while parsing xml file " + xmlFilePath, e);
 		}
 
 		return result;
@@ -79,7 +85,7 @@ public class WeightsLoadingHandler extends WeightsHandler {
 	 * @param xmlPath
 	 *            - xml file to be validated *
 	 */
-	public static void validateXMLSchema(String xmlPath, String xsdPath) {
+	private void validateXMLSchema(String xmlPath, String xsdPath) {
 
 		DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 		builderFactory.setNamespaceAware(true);
@@ -93,8 +99,8 @@ public class WeightsLoadingHandler extends WeightsHandler {
 			parser = builderFactory.newDocumentBuilder();
 
 		} catch (ParserConfigurationException e) {
-			throw ExceptionFactory.createException(RuntimeException.class, MessageCodes.ERR_WHILE_LOADING_XSD, e,
-					logger, Level.ERROR, xsdPath);
+			throw new RuntimeException(
+					"Something went wrong while loading xsd file " + xsdPath + " from the root of the jar file", e);
 		}
 
 		// parse the XML into a document object
@@ -103,31 +109,28 @@ public class WeightsLoadingHandler extends WeightsHandler {
 		try {
 			xmlFileInput = new FileInputStream(xmlFile);
 		} catch (FileNotFoundException e) {
-			throw ExceptionFactory.createException(IllegalArgumentException.class, MessageCodes.ERR_CANNOT_FIND_FILE, e,
-					logger, Level.ERROR, xmlPath);
+			throw new IllegalArgumentException("Cannot find file " + xmlPath, e);
 		}
 
 		try {
 			document = parser.parse(xmlFileInput);
 		} catch (SAXException | IOException e) {
-
-			throw ExceptionFactory.createException(IllegalArgumentException.class,
-					MessageCodes.ERR_WHILE_LOADING_PARSING_XML_TO_DOM, e, logger, Level.ERROR, xmlPath);
+			logger.error("Something went wrong while parsing XML file " + xmlPath + " to DOM object");
+			throw new IllegalArgumentException(
+					"Something went wrong while parsing XML file " + xmlPath + " to DOM object", e);
 		}
 
 		// associate the schema factory with the resource resolver, which is
 		// responsible for resolving the imported XSD's
 		factory.setResourceResolver(new ResourceResolver());
 
-		Source schemaFile = new StreamSource(ChecksCreatorUtils.class.getClassLoader().getResourceAsStream(xsdPath));
+		Source schemaFile = new StreamSource(WeightsLoadingHandler.class.getClassLoader().getResourceAsStream(xsdPath));
 		Schema schema = null;
 
 		try {
 			schema = factory.newSchema(schemaFile);
 		} catch (SAXException e) {
-			throw ExceptionFactory.createException(IllegalArgumentException.class,
-					MessageCodes.ERR_WHILE_LOADING_PARSING_XSD, e, logger, Level.ERROR, xsdPath);
-
+			throw new IllegalArgumentException("Something went wrong while parsing XSD file " + xsdPath, e);
 		}
 
 		Validator validator = schema.newValidator();
@@ -135,8 +138,7 @@ public class WeightsLoadingHandler extends WeightsHandler {
 		try {
 			validator.validate(new DOMSource(document));
 		} catch (SAXException | IOException e) {
-			throw ExceptionFactory.createException(RuntimeException.class,
-					MessageCodes.ERR_WHILE_VALIDATING_XML_WITH_XSD, e, logger, Level.ERROR, xmlPath, xsdPath);
+			throw new RuntimeException("Error while validating file: " + xmlPath + " with " + xsdPath);
 		}
 
 	}

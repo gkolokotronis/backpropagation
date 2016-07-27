@@ -12,7 +12,7 @@
 										<xs:element name="neuron" minOccurs ="1" maxOccurs="unbounded">
 											<xs:complexType>
 												<xs:sequence>
-													<xs:element name="weight" type="xs:double"/>
+													<xs:element type="xs:double" name="weight" maxOccurs="unbounded" minOccurs="0"/>
 												</xs:sequence>
 											</xs:complexType>
 										</xs:element>
