@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
@@ -24,6 +23,8 @@ import com.gkolokotronis.backpropagation.consts.AppConsts;
 import com.gkolokotronis.backpropagation.neuron.Neuron;
 import com.gkolokotronis.backpropagation.properties.ConfigPropertiesHolder;
 import com.gkolokotronis.backpropagation.utils.BackPropUtils;
+import com.gkolokotronis.backpropagation.weights.handling.WeightsLoadingHandler;
+import com.gkolokotronis.backpropagation.weights.handling.WeightsStorageHandler;
 
 /**
  * This class is responsible for handling the execution of the application
@@ -38,18 +39,33 @@ public class BackPropagationExecutionHandler {
 	public void execute() {
 		HashMap<Integer, ArrayList<Neuron>> neuralNetwork = new HashMap<Integer, ArrayList<Neuron>>();
 
-		logger.debug("Validate properties file");
-		validatePropertiesFile();
-		initializeLayers(neuralNetwork);
-		trainNeuralNetwork(neuralNetwork);
-		testNeuralNetwork(neuralNetwork);
+		String initializationFile = (String) ConfigPropertiesHolder.getInstance().getProperties()
+				.get(AppConsts.PROPERTIES_CONFIG_FILE_TO_INITIALIZE);
+
+		if (initializationFile == null) {
+			initializeLayers(neuralNetwork);
+			trainNeuralNetwork(neuralNetwork);
+			storeFinalWeights(neuralNetwork);
+		} else {
+			WeightsLoadingHandler weightsLoadingHandler = new WeightsLoadingHandler(null);
+			weightsLoadingHandler.execute();
+		}
+		// testNeuralNetwork(neuralNetwork);
 
 	}
 
-	private void validatePropertiesFile() {
-		// TODO validate the properties file
-		Properties properties = ConfigPropertiesHolder.getInstance().getProperties();
-		System.out.println(properties.entrySet());
+	/**
+	 * It stores the final weights of the neural network to the file specified
+	 * in the application.properties. In case the file exists, it overwrites it
+	 * 
+	 * @param neuralNetwork
+	 *            - the neuralNetwork
+	 */
+	private void storeFinalWeights(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
+		WeightsStorageHandler weightsStorage = new WeightsStorageHandler(neuralNetwork);
+
+		weightsStorage.execute();
+
 	}
 
 	private void initializeLayers(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
@@ -189,8 +205,8 @@ public class BackPropagationExecutionHandler {
 
 	private void testNeuralNetwork(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
 		while (true) {
-			// testXOR(neuralNetwork);
-			testHandWritten(neuralNetwork);
+			testXOR(neuralNetwork);
+			// testHandWritten(neuralNetwork);
 		}
 	}
 
