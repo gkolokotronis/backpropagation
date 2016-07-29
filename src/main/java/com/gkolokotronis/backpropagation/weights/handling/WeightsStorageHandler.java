@@ -45,6 +45,11 @@ public class WeightsStorageHandler extends WeightsHandler {
 			Element rootElement = doc.createElement("neuralNetwork");
 			doc.appendChild(rootElement);
 
+			Element learningRateElement = doc.createElement("learningRate");
+			learningRateElement.appendChild(doc.createTextNode(ConfigPropertiesHolder.getInstance().getProperties()
+					.getProperty(AppConsts.PROPERTIES_CONFIG_LEARNING_RATE)));
+			rootElement.appendChild(learningRateElement);
+
 			Element layersElement = doc.createElement("layers");
 			rootElement.appendChild(layersElement);
 

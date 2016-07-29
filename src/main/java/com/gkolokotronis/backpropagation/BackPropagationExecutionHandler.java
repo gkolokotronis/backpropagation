@@ -42,15 +42,17 @@ public class BackPropagationExecutionHandler {
 		String initializationFile = (String) ConfigPropertiesHolder.getInstance().getProperties()
 				.get(AppConsts.PROPERTIES_CONFIG_FILE_TO_INITIALIZE);
 
-		if (initializationFile == null) {
+		if (initializationFile == null || initializationFile.length() == 0) {
 			initializeLayers(neuralNetwork);
 			trainNeuralNetwork(neuralNetwork);
 			storeFinalWeights(neuralNetwork);
+			testNeuralNetwork(neuralNetwork);
 		} else {
-			WeightsLoadingHandler weightsLoadingHandler = new WeightsLoadingHandler(null);
+			WeightsLoadingHandler weightsLoadingHandler = new WeightsLoadingHandler(neuralNetwork);
 			weightsLoadingHandler.execute();
+			System.out.println(neuralNetwork);
+			testNeuralNetwork(neuralNetwork);
 		}
-		// testNeuralNetwork(neuralNetwork);
 
 	}
 
