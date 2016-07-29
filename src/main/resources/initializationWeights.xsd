@@ -3,6 +3,7 @@
 	<xs:element name="neuralNetwork">
 		<xs:complexType>
 			<xs:sequence>
+				<xs:element name="learningRate" type="xs:double" maxOccurs="1" minOccurs="1"/>
 				<xs:element name="layers">
 					<xs:complexType>
 						<xs:sequence>

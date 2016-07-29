@@ -12,6 +12,8 @@ import java.util.ArrayList;
 public class NeuralNetworkElement {
 	ArrayList<LayerElement> neuralNetwork = new ArrayList<LayerElement>();
 
+	Double learningRate;
+
 	/**
 	 * @return the neuralNetwork
 	 */
@@ -30,4 +32,20 @@ public class NeuralNetworkElement {
 	public void addLayer(LayerElement layer) {
 		neuralNetwork.add(layer);
 	}
+
+	/**
+	 * @return the learningRate
+	 */
+	public Double getLearningRate() {
+		return learningRate;
+	}
+
+	/**
+	 * @param learningRate
+	 *            the learningRate to set
+	 */
+	public void setLearningRate(Double learningRate) {
+		this.learningRate = learningRate;
+	}
+
 }

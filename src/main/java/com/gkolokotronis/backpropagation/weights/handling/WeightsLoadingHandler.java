@@ -29,7 +29,9 @@ import org.xml.sax.SAXException;
 import com.gkolokotronis.backpropagation.consts.AppConsts;
 import com.gkolokotronis.backpropagation.neuron.Neuron;
 import com.gkolokotronis.backpropagation.properties.ConfigPropertiesHolder;
+import com.gkolokotronis.backpropagation.weights.xml.elements.LayerElement;
 import com.gkolokotronis.backpropagation.weights.xml.elements.NeuralNetworkElement;
+import com.gkolokotronis.backpropagation.weights.xml.elements.NeuronElement;
 import com.gkolokotronis.backpropagation.xsd.ResourceResolver;
 
 public class WeightsLoadingHandler extends WeightsHandler {
@@ -49,8 +51,29 @@ public class WeightsLoadingHandler extends WeightsHandler {
 
 		neuralNetworkElement = loadInitializationWeights(xmlDistinct, AppConsts.INITIALIZATION_FILE_XSD_LOCATION);
 
-		System.out.println(neuralNetworkElement);
+		setNeuralNetwork(neuralNetworkElement);
 
+	}
+
+	private void setNeuralNetwork(NeuralNetworkElement neuralNetworkElement) {
+		ConfigPropertiesHolder.getInstance().getProperties().setProperty(AppConsts.PROPERTIES_CONFIG_LEARNING_RATE,
+				neuralNetworkElement.getLearningRate().toString());
+
+		ArrayList<LayerElement> layers = neuralNetworkElement.getNeuralNetwork();
+
+		int layerNum = 0;
+		for (LayerElement layerElement : layers) {
+			ArrayList<Neuron> layer = new ArrayList<Neuron>();
+
+			for (NeuronElement neuronElement : layerElement.getNeurons()) {
+				Neuron neuron = new Neuron();
+				neuron.setWeight(neuronElement.getWeight());
+				layer.add(neuron);
+			}
+
+			getNeuralNetwork().put(layerNum, layer);
+			layerNum++;
+		}
 	}
 
 	private NeuralNetworkElement loadInitializationWeights(String xmlFilePath, String xsdPath) {

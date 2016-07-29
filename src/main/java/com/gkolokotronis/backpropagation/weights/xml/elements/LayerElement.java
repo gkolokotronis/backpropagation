@@ -9,7 +9,7 @@ public class LayerElement {
 	/**
 	 * @return the layer neurons
 	 */
-	public ArrayList<NeuronElement> Neurons() {
+	public ArrayList<NeuronElement> getNeurons() {
 		return neurons;
 	}
 

@@ -21,6 +21,9 @@ public class NeuralNetworkModule extends AbstractRulesModule {
 
 		forPattern("neuralNetwork").createObject().ofType(NeuralNetworkElement.class).then().setProperties();
 
+		forPattern("neuralNetwork/learningRate").callMethod("setLearningRate").withParamCount(1)
+				.withParamTypes(Double.class).then().callParam();
+
 		forPattern("neuralNetwork/layers/layer").createObject().ofType(LayerElement.class).then().setProperties().then()
 				.setNext("addLayer");
 
