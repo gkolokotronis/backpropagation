@@ -50,7 +50,6 @@ public class BackPropagationExecutionHandler {
 		} else {
 			WeightsLoadingHandler weightsLoadingHandler = new WeightsLoadingHandler(neuralNetwork);
 			weightsLoadingHandler.execute();
-			System.out.println(neuralNetwork);
 			testNeuralNetwork(neuralNetwork);
 		}
 

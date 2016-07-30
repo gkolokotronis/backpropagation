@@ -30,8 +30,10 @@ public class NeuralNetworkModule extends AbstractRulesModule {
 		forPattern("neuralNetwork/layers/layer/neuron").createObject().ofType(NeuronElement.class).then()
 				.setProperties().then().setNext("addNeuron");
 
-		forPattern("neuralNetwork/layers/layer/neuron/weight").callMethod("addWeight").withParamCount(1)
+		forPattern("neuralNetwork/layers/layer/neuron/weights/weight").callMethod("addWeight").withParamCount(1)
 				.withParamTypes(Double.class).then().callParam();
 
+		forPattern("neuralNetwork/layers/layer/neuron/output").callMethod("setOutput").withParamCount(1)
+				.withParamTypes(Double.class).then().callParam();
 	}
 }

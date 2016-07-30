@@ -6,6 +6,8 @@ public class NeuronElement {
 
 	ArrayList<Double> weight = new ArrayList<Double>();
 
+	Double output;
+
 	/**
 	 * @return the weight
 	 */
@@ -23,6 +25,21 @@ public class NeuronElement {
 
 	public void addWeight(Double weight) {
 		this.weight.add(weight);
+	}
+
+	/**
+	 * @return the output
+	 */
+	public Double getOutput() {
+		return output;
+	}
+
+	/**
+	 * @param output
+	 *            the output to set
+	 */
+	public void setOutput(Double output) {
+		this.output = output;
 	}
 
 }

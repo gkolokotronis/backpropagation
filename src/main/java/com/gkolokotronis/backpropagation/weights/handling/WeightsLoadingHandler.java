@@ -68,6 +68,7 @@ public class WeightsLoadingHandler extends WeightsHandler {
 			for (NeuronElement neuronElement : layerElement.getNeurons()) {
 				Neuron neuron = new Neuron();
 				neuron.setWeight(neuronElement.getWeight());
+				neuron.setOutput(neuronElement.getOutput());
 				layer.add(neuron);
 			}
 
