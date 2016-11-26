@@ -12,7 +12,7 @@ public class BackPropagation {
 
 	public static void main(String[] args) {
 
-		BackPropagationExecutionHandler backprop = new BackPropagationExecutionHandler();
+		HandWrittenBPExecutionHandler backprop = new HandWrittenBPExecutionHandler();
 		backprop.execute();
 
 	}
