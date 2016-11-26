@@ -2,13 +2,15 @@ package com.gkolokotronis.backpropagation;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,7 +34,7 @@ import com.gkolokotronis.backpropagation.weights.handling.WeightsStorageHandler;
  * @author George Kolokotronis
  *
  */
-public class BackPropagationExecutionHandler {
+abstract public class BackPropagationExecutionHandler {
 
 	final Logger logger = LogManager.getLogger(BackPropagationExecutionHandler.class);
 
@@ -91,23 +93,40 @@ public class BackPropagationExecutionHandler {
 		XYSeries trainErrorDataset = new XYSeries("training error");
 		XYSeries crossValidErrorDataset = new XYSeries("cross validation error");
 
-		for (int currentEpoch = 0; currentEpoch < epochs; currentEpoch++) {
+		PrintWriter writerTrainError = null;
+		PrintWriter writerCrossValidError = null;
+		try {
+			writerTrainError = new PrintWriter("train_error.csv", "UTF-8");
+			writerCrossValidError = new PrintWriter("cross_valid_error.csv", "UTF-8");
 
-			trainingError = runBackProp(neuralNetwork, true, trainingFile);
-			System.out.println("Training file done");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		for (int currentEpoch = 0; currentEpoch < epochs; currentEpoch++) {
 
 			crossValidationError = runBackProp(neuralNetwork, false, crossValidFile);
 			System.out.println("Cross valid file done");
 
+			trainingError = runBackProp(neuralNetwork, true, trainingFile);
+			System.out.println("Training file done");
+
 			trainErrorDataset.add(trainingError, currentEpoch);
+			writerTrainError.println(trainingError + "," + currentEpoch);
+
 			crossValidErrorDataset.add(crossValidationError, currentEpoch);
+			writerCrossValidError.println(crossValidationError + "," + currentEpoch);
 
 			System.out.println("Epoch " + currentEpoch + " done                  ");
 			System.out.println("Training error: " + trainingError);
 			System.out.println("Cross validation error: " + crossValidationError);
 
 		}
-
+		writerTrainError.close();
+		writerCrossValidError.close();
 		createErrorChart(trainErrorDataset, crossValidErrorDataset);
 
 	}
@@ -204,14 +223,9 @@ public class BackPropagationExecutionHandler {
 		return error;
 	}
 
-	private void testNeuralNetwork(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
-		while (true) {
-			testXOR(neuralNetwork);
-			// testHandWritten(neuralNetwork);
-		}
-	}
+	abstract protected void testNeuralNetwork(HashMap<Integer, ArrayList<Neuron>> neuralNetwork);
 
-	private ArrayList<Double> transformTrainingExampleToDouble(String line, String trainingFile, int lineNumber)
+	protected ArrayList<Double> transformTrainingExampleToDouble(String line, String trainingFile, int lineNumber)
 			throws Exception {
 		ArrayList<Integer> networkStructure = BackPropUtils.getNetworkStructure();
 		List<String> trainingExample = Arrays.asList(line.split(","));
@@ -229,100 +243,4 @@ public class BackPropagationExecutionHandler {
 		return result;
 	}
 
-	private void testXOR(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
-		Scanner reader = new Scanner(System.in); // Reading from System.in
-		ArrayList<Double> input = new ArrayList<Double>();
-
-		System.out.println("Enter 1st number: ");
-		double n = reader.nextDouble();
-
-		input.add(n);
-		System.out.println("Enter 2nd number: ");
-		n = reader.nextDouble();
-
-		input.add(n);
-
-		BackPropUtils.forwardPass(neuralNetwork, input);
-		System.out.println(neuralNetwork);
-		input.clear();
-	}
-
-	private void testHandWritten(HashMap<Integer, ArrayList<Neuron>> neuralNetwork) {
-		Scanner reader = new Scanner(System.in); // Reading from System.in
-		String crossValidFile = (String) ConfigPropertiesHolder.getInstance().getProperties()
-				.get(AppConsts.PROPERTIES_CONFIG_TEST_FILE);
-		ArrayList<Double> input = new ArrayList<Double>();
-		FileReader fileReader;
-		try {
-			fileReader = new FileReader(crossValidFile);
-
-			BufferedReader br = new BufferedReader(fileReader);
-
-			// iterate through the file
-			int lineNumber = 0;
-			for (String line; (line = br.readLine()) != null;) {
-
-				input = transformTrainingExampleToDouble(line, crossValidFile, lineNumber);
-
-				for (int cnt = 0; cnt < 28; cnt++) {
-					for (int cnt2 = 0; cnt2 < 28; cnt2++) {
-						if (input.get(28 * cnt + cnt2) > 0.5) {
-							System.out.print("X");
-						} else {
-							System.out.print(" ");
-						}
-					}
-					System.out.println("");
-
-				}
-
-				ArrayList<Double> number = new ArrayList<Double>();
-				for (int cnt3 = 0; cnt3 < 10; cnt3++) {
-					// System.out.print(input.get(28 * 28 + cnt3) + " ");
-					number.add(input.get(28 * 28 + cnt3));
-				}
-
-				for (int i = 0; i < number.size(); i++) {
-					if (number.get(i) == 1.0) {
-						if (i == 9) {
-							System.out.println("0");
-						} else {
-							System.out.println(i + 1);
-						}
-					}
-				}
-
-				System.out.println("");
-				System.out.println("Press enter to predict");
-				reader.nextLine();
-				BackPropUtils.forwardPass(neuralNetwork, input);
-
-				ArrayList<Neuron> output = neuralNetwork.get(BackPropUtils.getNetworkStructure().size() - 1);
-
-				System.out.println("Prediction:");
-
-				for (int i = 0; i < output.size(); i++) {
-					if (i == 9) {
-						System.out.println("0: " + String.format("%.6f", output.get(i).getOutput()));
-					} else {
-						System.out.println(i + 1 + ": " + String.format("%.6f", output.get(i).getOutput()));
-					}
-				}
-
-				System.out.println("Press enter for the next number");
-				reader.nextLine();
-				lineNumber++;
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		BackPropUtils.forwardPass(neuralNetwork, input);
-		System.out.println(neuralNetwork);
-		input.clear();
-	}
 }
